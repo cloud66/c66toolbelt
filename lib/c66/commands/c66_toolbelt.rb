@@ -74,8 +74,12 @@ module C66
                     File.join(c66_path, "params.json")
                 end
 
-                def stack_file
-                    File.join(stack_path, "stack.json")
+                def stack_file(alias_name = nil)
+                    if alias_name
+                        File.join(stack_path, "#{alias_name}.json")
+                    else
+                        File.join(stack_path, "stack.json")
+                    end
                 end
 
                 def load_config
@@ -96,9 +100,9 @@ module C66
                     end
                 end
 
-                def load_stack
-                    if File.exists?(stack_file)
-                        if @stack = JSON.load(IO.read(stack_file))['stack_id']
+                def load_stack(alias_name)
+                    if File.exists?(stack_file(alias_name))
+                        if @stack = JSON.load(IO.read(stack_file(alias_name)))['stack_id']
                             say "Stack #{@stack} loaded."
                         end
                     end
@@ -119,25 +123,28 @@ module C66
                         if @params.has_key? 'base_url'
                             values[:base_url] = @params['base_url']
                         else
-                            abort "Missing 'base_url' parameter in #{params_file}"                
+                            abort "Missing 'base_url' parameter in #{params_file}"
                         end
                         if @params.has_key? 'client_id'
                             values[:client_id] =  @params['client_id']
                         else
-                            abort "Missing 'client_id' parameter in #{params_file}"    
+                            abort "Missing 'client_id' parameter in #{params_file}"
                         end
                         if @params.has_key? 'client_secret'
                             values[:client_secret] = @params['client_secret']
                         else
-                            abort "Missing 'client_secret' parameter in #{params_file}"                          
+                            abort "Missing 'client_secret' parameter in #{params_file}"
                         end
                         say "Parameters loaded."
                     end
                 end
 
-                def get_stack(stack)
-                    @stack=stack
-                    load_stack if stack.nil?
+                def get_stack(stack_id_or_alias_name)
+                    if stack_id_or_alias_name && stack_id_or_alias_name.match(/[a-z0-9]{32}/)
+                        @stack=stack_id_or_alias_name
+                    else
+                        load_stack(stack_id_or_alias_name)
+                    end
                 end
 
                 def client
@@ -166,7 +173,7 @@ module C66
                     begin
                         if (error.response.parsed.has_key? 'details')
                             puts error.response.parsed['details']
-                        else                   
+                        else
                             puts error.response.parsed['error_description']
                         end
                     rescue => e
@@ -182,7 +189,7 @@ module C66
                     end
                 end
 
-                
+
                 def self.compare_versions
                     result = C66::Utils::VERSION<=>get_version
                     case result
@@ -199,7 +206,7 @@ module C66
             map "d" => :deploy
 
             compare_versions
-            
+
 
             long_desc <<-LONGDESC
             Initialize Cloud 66 toolbelt
@@ -285,23 +292,29 @@ module C66
                    response = token.post("#{base_url}/stacks/#{@stack}/redeploy.json", {})
                    say JSON.parse(response.body)['response']['message']
                 rescue OAuth2::Error => e
-                    error_message(e)                    
+                    error_message(e)
                 end
             end
 
             desc "save", "Save the given stack to simplify following commands"
             option :stack, :aliases => "-s", :required => true
+            option :alias, :aliases => "-a", :required => false
             def save()
                 if !File.directory?(stack_path)
                     Dir.mkdir(stack_path)
                 end
                 @stack_json = { :stack_id => options[:stack]}
-                File.open(stack_file,"w") do |f|
+                File.open(stack_file(options[:alias]),"w") do |f|
                     f.write(@stack_json.to_json)
                 end
                 @stack = options[:stack]
                 say "Linked stack #{options[:stack]} to #{stack_file}. "\
                     "You are now able to use other commands without specify the stack UID."
+
+                if options[:alias]
+                    say "\nYou can also use other commands and specific this stack's alias, like so: \n"\
+                        "`c66 deploy -s #{options[:alias]}`"
+                end
             end
         end
     end
