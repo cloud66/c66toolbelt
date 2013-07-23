@@ -48,6 +48,7 @@ module C66
                 end
 
                 def base_url
+                    load_params
                     values[:base_url]
                 end
 
@@ -75,8 +76,16 @@ module C66
                     File.join(c66_path, "params.json")
                 end
 
-                def stack_file
-                    File.join(stack_path, "stack.json")
+                def stack_file(alias_name = nil)
+                    if alias_name
+                        if alias_name.match(/\w/)
+                            File.join(stack_path, "#{alias_name}.json")
+                        else
+                            abort "#{alias_name} is an invalid alias."
+                        end
+                    else
+                        File.join(stack_path, "stack.json")
+                    end
                 end
 
                 def load_config
@@ -97,9 +106,9 @@ module C66
                     end
                 end
 
-                def load_stack
-                    if File.exists?(stack_file)
-                        if file = JSON.load(IO.read(stack_file))
+                def load_stack(alias_name)
+                    if File.exists?(stack_file(alias_name))
+                        if file = JSON.load(IO.read(stack_file(alias_name)))
                             if file.has_key? 'stack_id' 
                                 @stack = file['stack_id']
                             end
@@ -126,25 +135,28 @@ module C66
                         if @params.has_key? 'base_url'
                             values[:base_url] = @params['base_url']
                         else
-                            abort "Missing 'base_url' parameter in #{params_file}"                
+                            abort "Missing 'base_url' parameter in #{params_file}"
                         end
                         if @params.has_key? 'client_id'
                             values[:client_id] =  @params['client_id']
                         else
-                            abort "Missing 'client_id' parameter in #{params_file}"    
+                            abort "Missing 'client_id' parameter in #{params_file}"
                         end
                         if @params.has_key? 'client_secret'
                             values[:client_secret] = @params['client_secret']
                         else
-                            abort "Missing 'client_secret' parameter in #{params_file}"                          
+                            abort "Missing 'client_secret' parameter in #{params_file}"
                         end
-                        say "Parameters loaded."
+                        #say "Parameters loaded."
                     end
                 end
 
-                def get_stack(stack)
-                    @stack=stack
-                    load_stack if stack.nil?
+                def get_stack(stack_id_or_alias_name)
+                    if stack_id_or_alias_name && !File.exist?(stack_file(stack_id_or_alias_name))
+                        @stack=stack_id_or_alias_name
+                    else
+                        load_stack(stack_id_or_alias_name)
+                    end
                 end
 
                 def client
@@ -171,8 +183,7 @@ module C66
 
                 def error_message(error)
                     begin
-                        if (!error.response.parsed.nil?)
-                            then
+                        if !error.response.parsed.nil?
                             if (error.response.parsed.has_key? 'details')
                                 puts error.response.parsed['details']
                             else                   
@@ -184,34 +195,59 @@ module C66
                     end
                 end
 
-                def self.get_version
+                def get_version
                     begin
                         JSON.load(HTTParty.get(VERSION_FILE).response.body).fetch("version")
                     rescue => e
-                        puts "Failed to retrieve the latest version of #{CLIENT_FULLNAME}, please contact us"
+                        puts "Failed to retrieve the latest version of Cloud 66 Toolbelt, please contact us"
                     end
                 end
 
-                
-                def self.compare_versions
+
+                def compare_versions
                     result = C66::Utils::VERSION<=>get_version
                     case result
                     when 0..1
-            	        #say "Version is up-to-date."
-            	    when -1
-                       puts "There is a new version of Cloud66 Toolbelt. Pease run \"gem update #{CLIENT_NAME}\"."
+                        #say "Version is up-to-date."
+                    when -1
+                       say "There is a new version of Cloud66 Toolbelt. Pease run \"gem update #{CLIENT_NAME}\".",:red
                     end
+                end
+
+                def pending_intercom_messages
+                    begin
+                        result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
+                        nb_messages = result['response']['unread_messages']
+                        if (nb_messages>0)
+                            say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com!",:green
+                        end
+                    rescue OAuth2::Error => e
+                    abort e.message
+                        abort "Error: can't report pending messages, please contact us at support@cloud66.com"
+                    end
+                end
+
+                def before_each_action
+                    compare_versions
+                    pending_intercom_messages
                 end
             }
 
-            compare_versions
-
             package_name "#{CLIENT_FULLNAME}: version #{C66::Utils::VERSION}\n"
+
+            default_task :default
+
+            desc "default", "hidden method", :hide => true
+            def default
+                before_each_action
+                help
+            end
+
             desc "init", "Initialize the toolbelt"
             map "d" => :deploy
-
-            
-
+            long_desc <<-LONGDESC
+            Initialize Cloud 66 toolbelt
+            LONGDESC
             def init
                 load_params
                 result = client.auth_code.authorize_url(:redirect_uri => values[:redirect_url], :scope => values[:scope])
@@ -235,6 +271,7 @@ module C66
 
             desc "list", "Lists all the stacks"
             def list
+                before_each_action
                 begin
                     response = parse_response(token.get("#{base_url}/stacks.json"))
 
@@ -253,6 +290,7 @@ module C66
             desc "settings", "Get the list of settings for this stack"
             option :stack, :aliases => "-s", :required => false
             def settings()
+                before_each_action
                 begin
                     get_stack(options[:stack])
                     abort_no_stack if @stack.nil?
@@ -277,6 +315,7 @@ module C66
             option :setting_name, :aliases => "-n", :required => true
             option :value, :aliases => "-v", :required => true
             def set()
+                before_each_action
                 begin
                     get_stack(options[:stack])
                     abort_no_stack if @stack.nil?
@@ -292,6 +331,7 @@ module C66
             desc "deploy", "Deploy the given stack"
             option :stack, :aliases => "-s", :required => false
             def deploy()
+                before_each_action
                 begin
                    get_stack(options[:stack])
                    abort_no_stack if @stack.nil?
@@ -301,13 +341,15 @@ module C66
                    response = token.post("#{base_url}/stacks/#{@stack}/redeploy.json", {})
                    say JSON.parse(response.body)['response']['message']
                 rescue OAuth2::Error => e
-                    error_message(e)                    
+                    error_message(e)
                 end
             end
 
             desc "save", "Save the given stack to simplify following commands"
             option :stack, :aliases => "-s", :required => true
+            option :alias, :aliases => "-a", :required => false
             def save()
+                before_each_action
                 begin
                     stack_details = parse_response(token.get("#{base_url}/stacks/#{options[:stack]}.json"))
                     stack_name = stack_details['response']['name']
@@ -315,12 +357,18 @@ module C66
                         Dir.mkdir(stack_path)
                     end
                     @stack_json = { :stack_id => options[:stack], :stack_name => stack_name}
-                    File.open(stack_file,"w") do |f|
+                    File.open(stack_file(options[:alias]),"w") do |f|
                         f.write(@stack_json.to_json)
                     end
                     @stack = options[:stack]
-                    say "Linked stack #{stack_name} to #{stack_file}. "\
-                        "You are now able to use other commands without specify the stack UID."
+
+                    say "Linked stack #{stack_name} to #{stack_file(options[:alias])}.\n"
+                    if !options[:alias]                
+                        say "You are now able to use other commands without specify the stack UID."
+                    else 
+                        say "You are now able to use other commands and specific this stack's alias, like so: "\
+                        "`c66 deploy -s #{options[:alias]}`"
+                    end 
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
@@ -328,14 +376,23 @@ module C66
 
             desc "info", "#{CLIENT_FULLNAME} information"
             def info()
+                before_each_action
                 begin
                     say "#{CLIENT_FULLNAME} version #{C66::Utils::VERSION}\n\n"
-                    load_stack
-                    stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
-                    say "name: "+stack_details['response']['name']
-                    say "UID: "+stack_details['response']['uid']
-                    say "Environment: "+stack_details['response']['environment']
-                    say "Status: "+STATUS[stack_details['response']['status']]
+                    Dir.glob("#{stack_path}/*.json") do |stack_file|
+                        stack_alias = File.basename(stack_file, ".json")
+                        load_stack(stack_alias)
+                        if stack_alias=="stack" 
+                            say "Default stack: no alias"
+                        else
+                            say "Alias: #{stack_alias}"
+                        end
+                        stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
+                        say "Name: "+stack_details['response']['name']
+                        say "UID: "+stack_details['response']['uid']
+                        say "Environment: "+stack_details['response']['environment']
+                        say "Status: "+STATUS[stack_details['response']['status']]+"\n\n"
+                    end
                 rescue OAuth2::Error => e  
                     puts "Didn't find any valid stack, please use the 'save' method."               
                     error_message(e)

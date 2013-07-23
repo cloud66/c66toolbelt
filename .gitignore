@@ -11,8 +11,12 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
+.cloud66
 
 # YARD artifacts
 .yardoc
 _yardoc
 doc/
+
+.ruby-gemset
+.ruby-version
