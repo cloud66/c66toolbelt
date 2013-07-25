@@ -203,9 +203,12 @@ module C66
                     end
                 end
 
+                def display_info
+                    say "#{CLIENT_FULLNAME} version #{C66::Utils::VERSION}\n\n"
+                end
 
                 def compare_versions
-                    result = C66::Utils::VERSION<=>get_version
+                    result = C66::Utils::VERSION <=> get_version
                     case result
                     when 0..1
                         #say "Version is up-to-date."
@@ -218,16 +221,14 @@ module C66
                     begin
                         result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
                         nb_messages = result['response']['unread_messages']
-                        if (nb_messages>0)
-                            say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com!",:green
-                        end
-                    rescue OAuth2::Error => e
-                    abort e.message
-                        abort "Error: can't report pending messages, please contact us at support@cloud66.com"
+                        say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com!",:green if nb_messages > 0
+                    rescue 
+                        # nop
                     end
                 end
 
                 def before_each_action
+                    display_info
                     compare_versions
                     pending_intercom_messages
                 end
@@ -289,7 +290,7 @@ module C66
 
             desc "settings", "Get the list of settings for this stack"
             option :stack, :aliases => "-s", :required => false
-            def settings()
+            def settings
                 before_each_action
                 begin
                     get_stack(options[:stack])
@@ -301,7 +302,7 @@ module C66
                     stack_name = stack_details['response']['name']
 
                     abort "No settings found" if settings.nil?
-                    say "Getting "+stack_name+" settings:"
+                    say "Getting #{stack_name} settings:"
                     settings.each do |setting|
                         say "#{setting['key']}\t\t#{setting['value']}\t#{setting['readonly'] ? '(readonly)' : ''}\r\n"
                    end
@@ -330,7 +331,7 @@ module C66
 
             desc "deploy", "Deploy the given stack"
             option :stack, :aliases => "-s", :required => false
-            def deploy()
+            def deploy
                 before_each_action
                 begin
                    get_stack(options[:stack])
@@ -345,10 +346,10 @@ module C66
                 end
             end
 
-            desc "save", "Save the given stack to simplify following commands"
+            desc "save", "Save the given stack information in the current directory"
             option :stack, :aliases => "-s", :required => true
             option :alias, :aliases => "-a", :required => false
-            def save()
+            def save
                 before_each_action
                 begin
                     stack_details = parse_response(token.get("#{base_url}/stacks/#{options[:stack]}.json"))
@@ -375,23 +376,23 @@ module C66
             end
 
             desc "info", "#{CLIENT_FULLNAME} information"
-            def info()
+            def info
                 before_each_action
                 begin
                     say "#{CLIENT_FULLNAME} version #{C66::Utils::VERSION}\n\n"
                     Dir.glob("#{stack_path}/*.json") do |stack_file|
                         stack_alias = File.basename(stack_file, ".json")
                         load_stack(stack_alias)
-                        if stack_alias=="stack" 
+                        if stack_alias == "stack" 
                             say "Default stack: no alias"
                         else
                             say "Alias: #{stack_alias}"
                         end
                         stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
-                        say "Name: "+stack_details['response']['name']
-                        say "UID: "+stack_details['response']['uid']
-                        say "Environment: "+stack_details['response']['environment']
-                        say "Status: "+STATUS[stack_details['response']['status']]+"\n\n"
+                        say "Name: #{stack_details['response']['name']}"
+                        say "UID: #{stack_details['response']['uid']}"
+                        say "Environment: #{stack_details['response']['environment']}"
+                        say "Status: #{STATUS[stack_details['response']['status']]}\n\n"
                     end
                 rescue OAuth2::Error => e  
                     puts "Didn't find any valid stack, please use the 'save' method."               
