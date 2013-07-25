@@ -68,7 +68,7 @@ You can retrieve the UID of a stack using the `list` command.
 Through the Cloud 66 interface, click on your stack, then click on the cog and select the stack information view to retrieve the UID:
 ![stack_uid](http://cdn.cloud66.com.s3.amazonaws.com/images/Toolbelt/exemple_stack_uid.PNG)
 
-There is a command to save your stack UID:
+There is a command to save a default stack UID:
 
 <p>
 <kbd>$ c66 save --stack &lt;stack_UID&gt;</kbd>
@@ -80,7 +80,7 @@ or
 <kbd>$ c66 save -s &lt;stack_UID&gt;</kbd>
 </p>
 
-**Note:** The stack is saved in your current folder (.cloud66/stack.json) and only one stack will be saved per folder.
+**Note:** The stack is saved in your current folder (.cloud66/stack.json) and only one default stack will be saved per folder.
 
 When your stack UID is saved, you are able to use other commands without specify the stack UID.
 For instance, it allows you to deploy a stack without putting the stack UID every time:
@@ -93,6 +93,18 @@ you can use a short-cut for this command:
 
 <p>
 <kbd>$ c66 d</kbd>
+</p>
+
+You can save multiple stack UID by giving an alias to a specific stack:
+
+<p>
+<kbd>$ c66 save --stack &lt;stack_UID&gt; --alias &lt;stack_alias&gt;</kbd>
+</p>
+
+Then you can use commands and specific a stack's alias, like so:
+
+<p>
+<kbd>$ c66 deploy -s &lt;stack_alias&gt;</kbd>
 </p>
 
 ### Settings of a Stack
@@ -111,7 +123,7 @@ or
 <kbd>$ c66 settings -s &lt;stack_UID&gt;</kbd>
 </p>
 	
-If your stack UID is saved:
+If a default stack UID is saved:
 
 <p>
 <kbd>$ c66 settings</kbd>
@@ -129,7 +141,7 @@ or
 <kbd>$ c66 set -s &lt;stack_UID&gt; -n &lt;setting_name&gt; -v &lt;value&gt;</kbd>
 </p>
 	
-If the stack UID is saved:
+If a default stack UID is saved:
 
 <p>
 <kbd>$ c66 set --setting_name &lt;setting_name&gt; --value &lt;value&gt;</kbd>
@@ -143,7 +155,7 @@ or
 
 ### Information of your toolbelt settings
 
-At any time, you can see your toolbelt settings, it includes the version of the toolbelt but also some information about your saved stack:
+At any time, you can see your toolbelt settings, it includes the version of the toolbelt but also some information about your saved stacks:
  
 <p>
 <kbd>$ c66 info</kbd>
