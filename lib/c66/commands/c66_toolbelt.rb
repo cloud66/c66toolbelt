@@ -217,20 +217,19 @@ module C66
                     end
                 end
 
-                def pending_intercom_messages
-                    begin
-                        result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
-                        nb_messages = result['response']['unread_messages']
-                        say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com!",:green if nb_messages > 0
-                    rescue 
-                        # nop
-                    end
-                end
+                # def pending_intercom_messages
+                #     begin
+                #         result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
+                #         nb_messages = result['response']['unread_messages']
+                #         say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com !",:green if nb_messages > 0
+                #     rescue 
+                #         # nop
+                #     end
+                # end
 
                 def before_each_action
-                    display_info
                     compare_versions
-                    pending_intercom_messages
+                    # pending_intercom_messages
                 end
             }
 
