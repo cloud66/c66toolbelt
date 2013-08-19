@@ -1,16 +1,14 @@
 <h1 class="doc-title">Cloud 66 Toolbelt</h1>
 <p class="lead">Cloud 66 Toolbelt is a simple command-line tool for the awesome Cloud 66 customers. It allows you to deploy, modify settings and retrieve the current status of your Cloud 66 stacks, and much more!</p>
 
-## Installation
+## Installation {: class=divider-title}
 
 You can install the Cloud 66 Toolbelt using [RubyGems](http://rubygems.org/):
 <p>
 <kbd>$ gem install c66</kbd>
 </p>
 
-## Usage
-
-### Help
+## Help {: class=divider-title}
 
 With c66 installed, you can display the help with one of the following instructions:
 <p>
@@ -29,7 +27,7 @@ or for a specific command:
 <kbd>$ c66 help &lt;command&gt;</kbd>
 </p>
 
-### Initialize the Toolbelt
+## Initialize the Toolbelt {: class=divider-title}
 
 Firstly, to use the Toolbelt, you will need to initiate it using:
 
@@ -42,7 +40,7 @@ You need to sign in and allow the Cloud 66 Toolbelt application to use your acco
 
 **Note**: This is a one-off task.
 
-### List the Stacks
+## List the Stacks {: class=divider-title}
 
 You can list all your stacks using:
 
@@ -50,7 +48,7 @@ You can list all your stacks using:
 <kbd>$ c66 list</kbd>
 </p>
 
-### Deploy a Stack
+## Deploy a Stack {: class=divider-title}
 
 Deploy a stack using the command `deploy` with a stack UID (Unique Identifer):
 
@@ -107,7 +105,7 @@ Then you can use commands and specific a stack's alias, like so:
 <kbd>$ c66 deploy -s &lt;stack_alias&gt;</kbd>
 </p>
 
-### Settings of a Stack
+## Settings of a Stack {: class=divider-title}
 
 It is possible to retrieve the settings of a specified stack and to easily modify them:
 
@@ -153,7 +151,39 @@ or
 <kbd>$ c66 set -n &lt;setting_name&gt; -v &lt;value&gt;</kbd>
 </p>
 
-### Information of your toolbelt settings
+## Lease an IP address {: class=divider-title}
+
+You can allow an IP address to connect temporary to the specific stack through ssh (22):
+
+<p>
+<kbd>$ c66 lease --stack &lt;stack_UID&gt; --ip-address &lt;ip_address&gt; --time-to-open &lt;time_to_open&gt;</kbd>
+</p>
+
+or
+
+<p>
+<kbd>$ c66 lease -s &lt;stack_UID&gt; -i &lt;ip_address&gt; -t &lt;time_to_open&gt;</kbd>
+</p>
+
+Options *ip-address* and *time-to-open* are optional.
+By default:
+
+- *ip-address* : your IP address
+- *time-to-open* : 20 minutes
+
+To allow your own IP address to connect temporary to the specific stack:
+
+<p>
+<kbd>$ c66 lease --stack &lt;stack_UID&gt;</kbd>
+</p>
+
+If a default stack UID is saved:
+
+<p>
+<kbd>$ c66 lease</kbd>
+</p>
+
+## Information of your toolbelt settings {: class=divider-title}
 
 At any time, you can see your toolbelt settings, it includes the version of the toolbelt but also some information about your saved stacks:
  
@@ -161,7 +191,7 @@ At any time, you can see your toolbelt settings, it includes the version of the 
 <kbd>$ c66 info</kbd>
 </p>
 
-## Contributing
+## Contributing {: class=divider-title}
 
 1. Fork it
 2. Create your feature branch `git checkout -b my-new-feature`
