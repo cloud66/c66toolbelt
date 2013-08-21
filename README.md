@@ -153,7 +153,7 @@ or
 
 ## Lease an IP address (version &ge; 0.1.91){: class=divider-title}
 
-You can allow an IP address to connect temporary to the specific stack through ssh (22):
+You can allow an IP address to connect temporarily to the specific stack through ssh (22):
 
 <p>
 <kbd>$ c66 lease --stack &lt;stack_UID&gt; --ip-address &lt;ip_address&gt; --time-to-open &lt;time_to_open&gt;</kbd>
@@ -171,7 +171,7 @@ By default:
 - *ip-address* : your IP address
 - *time-to-open* : 20 minutes
 
-To allow your own IP address to connect temporary to the specific stack:
+To allow your own IP address to connect temporarily to the specific stack:
 
 <p>
 <kbd>$ c66 lease --stack &lt;stack_UID&gt;</kbd>
