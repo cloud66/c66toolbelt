@@ -151,7 +151,7 @@ or
 <kbd>$ c66 set -n &lt;setting_name&gt; -v &lt;value&gt;</kbd>
 </p>
 
-## Lease an IP address {: class=divider-title}
+## Lease an IP address (version &ge; 0.1.91){: class=divider-title}
 
 You can allow an IP address to connect temporary to the specific stack through ssh (22):
 
