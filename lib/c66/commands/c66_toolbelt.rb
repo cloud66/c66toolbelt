@@ -208,7 +208,7 @@ module C66
                 end
 
                 def compare_versions
-                    result = C66::Utils::VERSION <=> get_version
+                    result = C66::Utils::VERSION <=> Gem::Version.new(get_version)
                     case result
                     when 0..1
                         #say "Version is up-to-date."
@@ -395,6 +395,25 @@ module C66
                     end
                 rescue OAuth2::Error => e  
                     puts "Didn't find any valid stack, please use the 'save' method."               
+                    error_message(e)
+                end
+            end
+
+            desc "lease", "Allow an IP address to connect temporary to the specific stack through ssh (22)"
+            option :stack, :aliases => "-s", :required => false
+            option :ip_address, :aliases => "-i", :required => false
+            option :time_to_open, :aliases => "-t", :required => false, :default => 20
+            def lease()
+                before_each_action
+                begin
+                    abort "time_to_open value is invalid. The value must be an integer between 0 and 240 (~4 hours)." if !(0..240).include? options[:time_to_open].to_i
+                    get_stack(options[:stack])
+                    abort_no_stack if @stack.nil?
+                    stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
+                    stack_name = stack_details['response']['name']
+                    response = token.post("#{base_url}/stacks/#{@stack}/lease.json", { :body => { :ip_address => options[:ip_address], :time_to_open => options[:time_to_open] }})
+                    say JSON.parse(response.body)['response']['message'] if JSON.parse(response.body)['response']['ok']
+                rescue OAuth2::Error => e
                     error_message(e)
                 end
             end
