@@ -19,6 +19,8 @@ module C66
         STK_DEPLOYING    = 6
         STK_TERMINAL_FAILURE    = 7
 
+        FORBIDDEN_STACKS_ALIAS = ['params', 'toolbelt']
+
         STATUS = {
             STK_QUEUED => 'Pending analysis',
             STK_SUCCESS => 'Deployed successfully',
@@ -357,8 +359,12 @@ module C66
                         Dir.mkdir(stack_path)
                     end
                     @stack_json = { :stack_id => options[:stack], :stack_name => stack_name}
-                    File.open(stack_file(options[:alias]),"w") do |f|
-                        f.write(@stack_json.to_json)
+                    if (!FORBIDDEN_STACKS_ALIAS.include? options[:alias])
+                        File.open(stack_file(options[:alias]),"w") do |f|
+                            f.write(@stack_json.to_json)
+                        end
+                    else
+                        abort 'Stack alias "'+options[:alias]+'" is forbidden, please retry with another alias.'
                     end
                     @stack = options[:stack]
 
@@ -381,17 +387,19 @@ module C66
                     say "#{CLIENT_FULLNAME} version #{C66::Utils::VERSION}\n\n"
                     Dir.glob("#{stack_path}/*.json") do |stack_file|
                         stack_alias = File.basename(stack_file, ".json")
-                        load_stack(stack_alias)
-                        if stack_alias == "stack" 
-                            say "Default stack: no alias"
-                        else
-                            say "Alias: #{stack_alias}"
+                        if (!FORBIDDEN_STACKS_ALIAS.include? stack_alias)
+                            load_stack(stack_alias)
+                            if stack_alias == "stack" 
+                                say "Default stack: no alias"
+                            else
+                                say "Alias: #{stack_alias}"
+                            end
+                            stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
+                            say "Name: #{stack_details['response']['name']}"
+                            say "UID: #{stack_details['response']['uid']}"
+                            say "Environment: #{stack_details['response']['environment']}"
+                            say "Status: #{STATUS[stack_details['response']['status']]}\n\n"
                         end
-                        stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
-                        say "Name: #{stack_details['response']['name']}"
-                        say "UID: #{stack_details['response']['uid']}"
-                        say "Environment: #{stack_details['response']['environment']}"
-                        say "Status: #{STATUS[stack_details['response']['status']]}\n\n"
                     end
                 rescue OAuth2::Error => e  
                     puts "Didn't find any valid stack, please use the 'save' method."               
