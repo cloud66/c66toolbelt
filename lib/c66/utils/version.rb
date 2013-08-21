@@ -1,7 +1,7 @@
 module C66
 	module Utils
 		#Version format
- 	 	VERSION = Gem::Version.new("0.1.11")
+ 	 	VERSION = Gem::Version.new("0.1.91")
 	end
 end
 	
