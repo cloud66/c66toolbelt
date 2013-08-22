@@ -1,14 +1,14 @@
 <h1 class="doc-title">Cloud 66 Toolbelt</h1>
 <p class="lead">Cloud 66 Toolbelt is a simple command-line tool for the awesome Cloud 66 customers. It allows you to deploy, modify settings and retrieve the current status of your Cloud 66 stacks, and much more!</p>
 
-## Installation {: class=divider-title}
+## Installation
 
 You can install the Cloud 66 Toolbelt using [RubyGems](http://rubygems.org/):
 <p>
 <kbd>$ gem install c66</kbd>
 </p>
 
-## Help {: class=divider-title}
+## Help
 
 With c66 installed, you can display the help with one of the following instructions:
 <p>
@@ -27,7 +27,7 @@ or for a specific command:
 <kbd>$ c66 help &lt;command&gt;</kbd>
 </p>
 
-## Initialize the Toolbelt {: class=divider-title}
+## Initialize the Toolbelt
 
 Firstly, to use the Toolbelt, you will need to initiate it using:
 
@@ -40,7 +40,7 @@ You need to sign in and allow the Cloud 66 Toolbelt application to use your acco
 
 **Note**: This is a one-off task.
 
-## List the Stacks {: class=divider-title}
+## List the Stacks
 
 You can list all your stacks using:
 
@@ -48,7 +48,7 @@ You can list all your stacks using:
 <kbd>$ c66 list</kbd>
 </p>
 
-## Deploy a Stack {: class=divider-title}
+## Deploy a Stack
 
 Deploy a stack using the command `deploy` with a stack UID (Unique Identifer):
 
@@ -105,7 +105,7 @@ Then you can use commands and specific a stack's alias, like so:
 <kbd>$ c66 deploy -s &lt;stack_alias&gt;</kbd>
 </p>
 
-## Settings of a Stack {: class=divider-title}
+## Settings of a Stack
 
 It is possible to retrieve the settings of a specified stack and to easily modify them:
 
@@ -151,7 +151,7 @@ or
 <kbd>$ c66 set -n &lt;setting_name&gt; -v &lt;value&gt;</kbd>
 </p>
 
-## Lease an IP address (version &ge; 0.1.91){: class=divider-title}
+## Lease an IP address (version &ge; 0.1.91
 
 You can allow an IP address to connect temporarily to the specific stack through ssh (22):
 
@@ -183,7 +183,7 @@ If a default stack UID is saved:
 <kbd>$ c66 lease</kbd>
 </p>
 
-## Information of your toolbelt settings {: class=divider-title}
+## Information of your toolbelt settings
 
 At any time, you can see your toolbelt settings, it includes the version of the toolbelt but also some information about your saved stacks:
  
@@ -191,7 +191,7 @@ At any time, you can see your toolbelt settings, it includes the version of the 
 <kbd>$ c66 info</kbd>
 </p>
 
-## Contributing {: class=divider-title}
+## Contributing
 
 1. Fork it
 2. Create your feature branch `git checkout -b my-new-feature`
