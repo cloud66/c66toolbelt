@@ -411,6 +411,7 @@ module C66
             option :stack, :aliases => "-s", :required => false
             option :ip_address, :aliases => "-i", :required => false
             option :time_to_open, :aliases => "-t", :required => false, :default => 20
+            option :show_ip, :aliases => "-a", :required => false
             def lease()
                 before_each_action
                 begin
@@ -421,6 +422,14 @@ module C66
                     stack_name = stack_details['response']['name']
                     response = token.post("#{base_url}/stacks/#{@stack}/lease.json", { :body => { :ip_address => options[:ip_address], :time_to_open => options[:time_to_open] }})
                     say JSON.parse(response.body)['response']['message'] if JSON.parse(response.body)['response']['ok']
+
+                    if options[:show_ip]
+                        server_groups = token.get("#{base_url}/stacks/#{@stack}/server_groups.json")
+                        rails_server_group = JSON.parse(server_groups.body)['response'].find { |sg| sg['name'] == 'Rails Server' }
+                        servers = token.get("#{base_url}/stacks/#{@stack}/server_groups/#{rails_server_group['id']}/servers.json")
+                        server_ip_address = JSON.parse(servers.body)['response'][0]['address']
+                        say "For reference, here's the IP address for your first Rails server: #{server_ip_address}"
+                    end
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
