@@ -111,7 +111,7 @@ module C66
                 def load_stack(alias_name)
                     if File.exists?(stack_file(alias_name))
                         if file = JSON.load(IO.read(stack_file(alias_name)))
-                            if file.has_key? 'stack_id' 
+                            if file.has_key? 'stack_id'
                                 @stack = file['stack_id']
                             end
                             if file.has_key? 'stack_name' and !@stack.nil?
@@ -188,7 +188,7 @@ module C66
                         if !error.response.parsed.nil?
                             if (error.response.parsed.has_key? 'details')
                                 puts error.response.parsed['details']
-                            else                   
+                            else
                                 puts error.response.parsed['error_description']
                             end
                         end
@@ -224,7 +224,7 @@ module C66
                 #         result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
                 #         nb_messages = result['response']['unread_messages']
                 #         say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com !",:green if nb_messages > 0
-                #     rescue 
+                #     rescue
                 #         # nop
                 #     end
                 # end
@@ -369,12 +369,12 @@ module C66
                     @stack = options[:stack]
 
                     say "Linked stack #{stack_name} to #{stack_file(options[:alias])}.\n"
-                    if !options[:alias]                
+                    if !options[:alias]
                         say "You are now able to use other commands without specify the stack UID."
-                    else 
+                    else
                         say "You are now able to use other commands and specific this stack's alias, like so: "\
                         "`c66 deploy -s #{options[:alias]}`"
-                    end 
+                    end
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
@@ -389,7 +389,7 @@ module C66
                         stack_alias = File.basename(stack_file, ".json")
                         if (!FORBIDDEN_STACKS_ALIAS.include? stack_alias)
                             load_stack(stack_alias)
-                            if stack_alias == "stack" 
+                            if stack_alias == "stack"
                                 say "Default stack: no alias"
                             else
                                 say "Alias: #{stack_alias}"
@@ -401,8 +401,8 @@ module C66
                             say "Status: #{STATUS[stack_details['response']['status']]}\n\n"
                         end
                     end
-                rescue OAuth2::Error => e  
-                    puts "Didn't find any valid stack, please use the 'save' method."               
+                rescue OAuth2::Error => e
+                    puts "Didn't find any valid stack, please use the 'save' method."
                     error_message(e)
                 end
             end
@@ -411,6 +411,7 @@ module C66
             option :stack, :aliases => "-s", :required => false
             option :ip_address, :aliases => "-i", :required => false
             option :time_to_open, :aliases => "-t", :required => false, :default => 20
+            option :show_ip, :aliases => "-a", :required => false
             def lease()
                 before_each_action
                 begin
@@ -421,6 +422,14 @@ module C66
                     stack_name = stack_details['response']['name']
                     response = token.post("#{base_url}/stacks/#{@stack}/lease.json", { :body => { :ip_address => options[:ip_address], :time_to_open => options[:time_to_open] }})
                     say JSON.parse(response.body)['response']['message'] if JSON.parse(response.body)['response']['ok']
+
+                    if options[:show_ip]
+                        server_groups = token.get("#{base_url}/stacks/#{@stack}/server_groups.json")
+                        rails_server_group = JSON.parse(server_groups.body)['response'].find { |sg| sg['name'] == 'Rails Server' }
+                        servers = token.get("#{base_url}/stacks/#{@stack}/server_groups/#{rails_server_group['id']}/servers.json")
+                        server_ip_address = JSON.parse(servers.body)['response'][0]['address']
+                        say "For reference, here's the IP address for your first Rails server: #{server_ip_address}"
+                    end
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
