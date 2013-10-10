@@ -20,3 +20,4 @@ doc/
 
 .ruby-gemset
 .ruby-version
+/dev.sh
