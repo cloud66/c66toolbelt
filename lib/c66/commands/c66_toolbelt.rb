@@ -33,15 +33,17 @@ module C66
         }
 
         VERSION_FILE = 'http://cdn.cloud66.com/config/cloud66_toolbelt.json'
-        BASE_URL = 'https://www.cloud66.com'
+        BASE_URL = ENV['C66_API_ENDPOINT'] || 'https://www.cloud66.com'
+        CLIENT_ID = ENV['C66_CLIENT_ID'] || '638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d'
+        CLIENT_SECRET = ENV['C66_CLIENT_SECRET'] || '961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f'
 
         class C66Toolbelt < Thor
             no_commands {
                 def values
                     @values ||=
                     { :base_url => "#{BASE_URL}/api/2",
-                    :client_id => "638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d",
-                    :client_secret => "961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f",
+                    :client_id => CLIENT_ID,
+                    :client_secret => CLIENT_SECRET,
                     :scope => "public redeploy",
                     :redirect_url => "urn:ietf:wg:oauth:2.0:oob",
                     :auth_url => "#{BASE_URL}/oauth/authorize",
@@ -305,7 +307,7 @@ module C66
                     abort "No settings found" if settings.nil?
                     say "Getting #{stack_name} settings:"
                     settings.each do |setting|
-                        say "#{setting['key']}\t\t#{setting['value']}\t#{setting['readonly'] ? '(readonly)' : ''}\r\n"
+                        say "#{setting['key'].ljust(20)}\t\t#{setting['value']}\t#{setting['readonly'] ? '(readonly)' : ''}\r\n"
                    end
                 rescue OAuth2::Error => e
                     error_message(e)
@@ -401,8 +403,8 @@ module C66
                             say "Status: #{STATUS[stack_details['response']['status']]}\n\n"
                         end
                     end
-                rescue OAuth2::Error => e
-                    puts "Didn't find any valid stack, please use the 'save' method."
+                rescue OAuth2::Error => e  
+                    puts "Didn't find any valid stacks, please use the 'save' method."               
                     error_message(e)
                 end
             end
