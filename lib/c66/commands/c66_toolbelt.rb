@@ -349,7 +349,31 @@ module C66
                 end
             end
 
-            desc "save", "Save the given stack information in the current directory"
+			desc "restart", "Restart the given stack"
+			option :stack, :aliases => "-s", :required => false
+			option :target, :aliases => "-t", :required => false
+			def restart
+				before_each_action
+				begin
+					get_stack(options[:stack])
+					abort_no_stack if @stack.nil?
+
+					target_option = options[:target]
+					target = target_option.nil? ? 'web' : target_option.to_s
+					abort "Only 'web' target is currently supported" unless target == 'web'
+
+					stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
+					stack_name = stack_details['response']['name']
+					say stack_name+": "
+					response = token.post("#{base_url}/stacks/#{@stack}/restart.json", {})
+					say JSON.parse(response.body)['response']['message']
+
+				rescue OAuth2::Error => e
+					error_message(e)
+				end
+			end
+
+			desc "save", "Save the given stack information in the current directory"
             option :stack, :aliases => "-s", :required => true
             option :alias, :aliases => "-a", :required => false
             def save
