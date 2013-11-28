@@ -44,7 +44,7 @@ module C66
                     { :base_url => "#{BASE_URL}/api/2",
                     :client_id => CLIENT_ID,
                     :client_secret => CLIENT_SECRET,
-                    :scope => "public redeploy",
+                    :scope => "public redeploy admin",
                     :redirect_url => "urn:ietf:wg:oauth:2.0:oob",
                     :auth_url => "#{BASE_URL}/oauth/authorize",
                     :token_url => "#{BASE_URL}/oauth/token"
@@ -128,6 +128,10 @@ module C66
                     abort "No stack provided or saved, please use '--stack' or '-s' option. "\
                     "You can also use the 'save' method with '--stack' or '-s' option."
                 end
+                
+                def abort_no_server
+                  abort "Cannot find the given server name in the stack."
+                end
 
                 def load_params
                     if File.exists?(params_file) && File.size(params_file)!=0
@@ -161,6 +165,18 @@ module C66
                     else
                         load_stack(stack_id_or_alias_name)
                     end
+                end
+                
+                def get_server_by_name(stack_id_or_alias_name, server_name)
+                  get_stack(stack_id_or_alias_name)
+                  
+                  # get stack servers
+                  response = token.get("#{base_url}/stacks/#{@stack}/servers.json")
+                  servers = parse_response(response)['response']
+                  server = servers.select { |s| s['name'].downcase == server_name.downcase }
+
+                  return nil if server.empty?
+                  return server.first
                 end
 
                 def client
@@ -220,16 +236,6 @@ module C66
                        say "There is a new version of Cloud66 Toolbelt. Pease run \"gem update #{CLIENT_NAME}\".",:red
                     end
                 end
-
-                # def pending_intercom_messages
-                #     begin
-                #         result = parse_response(token.get("#{base_url}/users/unread_messages.json"))
-                #         nb_messages = result['response']['unread_messages']
-                #         say "You have #{nb_messages} pending message(s), check them out at www.cloud66.com !",:green if nb_messages > 0
-                #     rescue
-                #         # nop
-                #     end
-                # end
 
                 def before_each_action
                     compare_versions
@@ -314,6 +320,40 @@ module C66
                 end
             end
 
+            desc "ssh", "Start a SSH shell terminal with the given server"
+            option :stack, :aliases => "-s", :required => false
+            option :server_name, :aliases => "-n", :required => true
+            def ssh
+              before_each_action
+              begin
+                server = get_server_by_name(options[:stack], options[:server_name])
+                abort_no_server if server.nil?
+                say "Found server #{server['uid']} with name #{options[:server_name]}"
+                
+                # get the SSH key
+                say "Requesting the SSH keys"
+                response = token.get("#{base_url}/servers/#{server['uid']}/ssh_private_key.json")
+                prv_key = parse_response(response)['response']['private_key']
+                
+                say "Openning firewall temporarily for this IP address"
+                lease
+                
+                path = File.join(Dir.home, '.ssh', "server_#{server['name'].downcase}")
+
+                # save it to user directory
+                File.open(path, 'w') do |file| 
+                  file.write(prv_key) 
+                  file.chmod(0600)
+                end
+
+                # let's do it
+                say "ssh '#{server['user_name']}'@'#{server['address']}' -i '#{path}'"
+                system "ssh '#{server['user_name']}'@'#{server['address']}' -i '#{path}'"
+              rescue OAuth2::Error => e
+                  error_message(e)
+              end
+            end
+              
             desc "set", "Set the value of a specific setting"
             option :stack, :aliases => "-s", :required => false
             option :setting_name, :aliases => "-n", :required => true
