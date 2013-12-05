@@ -44,7 +44,7 @@ module C66
                     { :base_url => "#{BASE_URL}/api/2",
                     :client_id => CLIENT_ID,
                     :client_secret => CLIENT_SECRET,
-                    :scope => "public redeploy admin",
+                    :scope => "public redeploy admin users jobs",
                     :redirect_url => "urn:ietf:wg:oauth:2.0:oob",
                     :auth_url => "#{BASE_URL}/oauth/authorize",
                     :token_url => "#{BASE_URL}/oauth/token"
@@ -205,9 +205,9 @@ module C66
                     begin
                         if !error.response.parsed.nil?
                             if (error.response.parsed.has_key? 'details')
-                                puts error.response.parsed['details']
+                                say error.response.parsed['details']
                             else
-                                puts error.response.parsed['error_description']
+                                say error.response.parsed['error_description']
                             end
                         end
                     rescue => e
@@ -219,7 +219,7 @@ module C66
                     begin
                         JSON.load(HTTParty.get(VERSION_FILE).response.body).fetch("version")
                     rescue => e
-                        puts "Failed to retrieve the latest version of Cloud 66 Toolbelt, please contact us"
+                        say "Failed to retrieve the latest version of Cloud 66 Toolbelt, please contact us"
                     end
                 end
 
@@ -326,6 +326,8 @@ module C66
             def ssh
               before_each_action
               begin
+                get_stack(options[:stack])
+                abort_no_stack if @stack.nil?
                 server = get_server_by_name(options[:stack], options[:server_name])
                 abort_no_server if server.nil?
                 say "Found server #{server['uid']} with name #{options[:server_name]}"
