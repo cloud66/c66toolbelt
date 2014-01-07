@@ -475,7 +475,7 @@ module C66
                 end
             end
 
-            desc "lease", "Allow an IP address to connect temporary to the specific stack through ssh (22)"
+            desc "lease", "Allow an IP address to connect temporarily to the specified stack through the specified port - the default port is ssh (22)"
             option :stack, :aliases => "-s", :required => false
             option :ip_address, :aliases => "-i", :required => false
             option :time_to_open, :aliases => "-t", :required => false, :default => 20
