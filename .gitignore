@@ -21,3 +21,4 @@ doc/
 .ruby-gemset
 .ruby-version
 /dev.sh
+/.DS_Store
