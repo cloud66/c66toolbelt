@@ -34,8 +34,8 @@ module C66
 
         VERSION_FILE = 'http://cdn.cloud66.com/config/cloud66_toolbelt.json'
         BASE_URL = ENV['C66_API_ENDPOINT'] || 'https://www.cloud66.com'
-        CLIENT_ID = ENV['C66_CLIENT_ID'] || '638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d'
-        CLIENT_SECRET = ENV['C66_CLIENT_SECRET'] || '961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f'
+				CLIENT_ID = ENV['C66_CLIENT_ID'] || '638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d'
+				CLIENT_SECRET = ENV['C66_CLIENT_SECRET'] || '961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f'
 
         class C66Toolbelt < Thor
             no_commands {
@@ -475,20 +475,20 @@ module C66
                 end
             end
 
-            desc "lease", "Allow an IP address to connect temporary to the specific stack through ssh (22)"
+            desc "lease", "Allow an IP address to connect temporarily to the specified stack through the specified port - the default port is ssh (22)"
             option :stack, :aliases => "-s", :required => false
             option :ip_address, :aliases => "-i", :required => false
             option :time_to_open, :aliases => "-t", :required => false, :default => 20
+			option :port, :aliases => "-p", :required => false, :default => 22
             option :show_ip, :aliases => "-a", :required => false
             def lease()
                 before_each_action
                 begin
-                    abort "time_to_open value is invalid. The value must be an integer between 0 and 240 (~4 hours)." if !(0..240).include? options[:time_to_open].to_i
+                    abort "time_to_open value is invalid. The value must be an integer between 0 and 240 (~4 hours)." unless (0..240).include?(options[:time_to_open].to_i)
+					abort "port value is invalid. The value must be a valid port." unless options[:port].to_i > 0
                     get_stack(options[:stack])
                     abort_no_stack if @stack.nil?
-                    stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
-                    stack_name = stack_details['response']['name']
-                    response = token.post("#{base_url}/stacks/#{@stack}/lease.json", { :body => { :ip_address => options[:ip_address], :time_to_open => options[:time_to_open] }})
+                    response = token.post("#{base_url}/stacks/#{@stack}/lease.json", { :body => { :ip_address => options[:ip_address], :time_to_open => options[:time_to_open], :port => options[:port] }})
                     say JSON.parse(response.body)['response']['message'] if JSON.parse(response.body)['response']['ok']
 
                     if options[:show_ip]
@@ -501,7 +501,44 @@ module C66
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
-            end
+			end
+
+			desc "download_backup","Download a backup"
+			option :backup_id, :aliases => "-b", :required => true
+			def download_backup()
+				before_each_action
+				begin
+					next_extension = nil
+					downloaded_files = []
+					begin
+						response = parse_response(token.get("#{base_url}/backups/#{options[:backup_id]}/export/#{next_extension.nil? ? '' : next_extension }"))
+						file_name = response['response']['file_name']
+						unless file_name.nil?
+							File.open(file_name, "wb") do |f|
+								f.write HTTParty.get(response['response']['url']).parsed_response
+							end
+							downloaded_files << file_name
+						end
+						next_extension = response['response']['next_extension']
+					end while (!next_extension.nil?)
+
+					if downloaded_files.size > 0
+						if downloaded_files.size > 1
+							File.open("#{options[:backup_id]}.tar", "wb") do |output_f|
+								downloaded_files.sort.each {|f| output_f.write(File.open(f, 'r').read)}
+							end
+						else
+							File.rename downloaded_files.first, "#{options[:backup_id]}.tar"
+						end
+						downloaded_files.each {|f| File.delete f }
+						say "Your backup is downloaded : #{options[:backup_id]}.tar"
+					else
+						say "There is no file associated to #{options[:backup_id]}"
+					end
+				rescue OAuth2::Error => e
+					error_message(e)
+				end
+			end
         end
     end
 end
