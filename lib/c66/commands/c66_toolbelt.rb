@@ -34,8 +34,8 @@ module C66
 
         VERSION_FILE = 'http://cdn.cloud66.com/config/cloud66_toolbelt.json'
         BASE_URL = ENV['C66_API_ENDPOINT'] || 'https://www.cloud66.com'
-		CLIENT_ID = ENV['C66_CLIENT_ID'] || '638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d'
-		CLIENT_SECRET = ENV['C66_CLIENT_SECRET'] || '961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f'
+				CLIENT_ID = ENV['C66_CLIENT_ID'] || '638412995ee3da6f67e24564ac297f9554ee253a8fe1502348c4d6e845bd9d0d'
+				CLIENT_SECRET = ENV['C66_CLIENT_SECRET'] || '961398353aa6e7f0f36dfcd83e447d748c54481b7a3b143e0119441516e8b91f'
 
         class C66Toolbelt < Thor
             no_commands {
