@@ -527,10 +527,10 @@ module C66
 							File.open("#{options[:backup_id]}.tar", "wb") do |output_f|
 								downloaded_files.sort.each {|f| output_f.write(File.open(f, 'r').read)}
 							end
+							downloaded_files.each {|f| File.delete f }
 						else
 							File.rename downloaded_files.first, "#{options[:backup_id]}.tar"
 						end
-						downloaded_files.each {|f| File.delete f }
 						say "Your backup is downloaded : #{options[:backup_id]}.tar"
 					else
 						say "There is no file associated to #{options[:backup_id]}"
