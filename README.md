@@ -183,6 +183,17 @@ If a default stack UID is saved:
 <kbd>$ c66 lease</kbd>
 </p>
 
+## Download an Backup (version &ge; 0.1.91
+
+You can download a Backup if you installed managed backup on your stack.
+
+<p>
+<kbd>$ c66 download_backup -b &lt;backup_id&gt;
+</p>
+
+You can retrieve the id of a backup using "Managed backups" page through the Cloud 66 interface, click on your stack, then click on the managed backup icon in front of your database group. In next page you can find backup id by hovering on each backup. 
+
+
 ## Information of your toolbelt settings
 
 At any time, you can see your toolbelt settings, it includes the version of the toolbelt but also some information about your saved stacks:
