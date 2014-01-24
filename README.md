@@ -183,9 +183,9 @@ If a default stack UID is saved:
 <kbd>$ c66 lease</kbd>
 </p>
 
-## Download an backup (version &ge; 0.1.91)
+## Download your backup (version &ge; 0.1.91)
 
-You can download a backup if you installed <a href="help.cloud66.com/stack-features/db-backup.html" target="_blank">managed backups</a> on your stack. This feature will concatenate separate files into one automatically if your backup consists of numerous files.
+You can download a backup if you installed <a href="http://help.cloud66.com/stack-features/db-backup.html" target="_blank">managed backups</a> on your stack. This feature will concatenate separate files into one automatically if your backup consists of numerous files.
 
 <p>
 <kbd>$ c66 download_backup -b &lt;backup_id&gt;
