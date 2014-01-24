@@ -151,7 +151,7 @@ or
 <kbd>$ c66 set -n &lt;setting_name&gt; -v &lt;value&gt;</kbd>
 </p>
 
-## Lease an IP address (version &ge; 0.1.91
+## Lease an IP address (version &ge; 0.1.91)
 
 You can allow an IP address to connect temporarily to the specific stack through ssh (22):
 
@@ -183,16 +183,15 @@ If a default stack UID is saved:
 <kbd>$ c66 lease</kbd>
 </p>
 
-## Download an Backup (version &ge; 0.1.91
+## Download an backup (version &ge; 0.1.91)
 
-You can download a Backup if you installed managed backup on your stack.
+You can download a backup if you installed <a href="help.cloud66.com/stack-features/db-backup.html" target="_blank">managed backups</a> on your stack. This feature will concatenate separate files into one automatically if your backup consists of numerous files.
 
 <p>
 <kbd>$ c66 download_backup -b &lt;backup_id&gt;
 </p>
 
-You can retrieve the id of a backup using "Managed backups" page through the Cloud 66 interface, click on your stack, then click on the managed backup icon in front of your database group. In next page you can find backup id by hovering on each backup. 
-
+You can retrieve the backup ID by accessing the "Managed backups" page through the Cloud 66 interface. Click on your stack and then on the managed backup icon in front of your database group, and your backup IDs should be visible.
 
 ## Information of your toolbelt settings
 
