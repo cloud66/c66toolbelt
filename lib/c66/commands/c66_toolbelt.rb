@@ -368,7 +368,11 @@ module C66
                     stack_details = parse_response(token.get("#{base_url}/stacks/#{@stack}.json"))
                     stack_name = stack_details['response']['name']
                     response = token.post("#{base_url}/stacks/#{@stack}/setting.json", { :body => { :setting_name => options[:setting_name], :setting_value => options[:value] }})
-                    say "On #{stack_name}: applied value '#{options[:value]}' to setting '#{options[:setting_name]}'" if JSON.parse(response.body)['response']['ok']
+					if JSON.parse(response.body)['response']['ok']
+						say "On #{stack_name}: applied value '#{options[:value]}' to setting '#{options[:setting_name]}'"
+					else
+						say JSON.parse(response.body)['response']['message']
+					end
                 rescue OAuth2::Error => e
                     error_message(e)
                 end
