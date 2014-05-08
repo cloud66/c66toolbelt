@@ -1,3 +1,4 @@
+<h2>This toolbelt is discontinued. Please use the <a href="https://github.com/cloud66/cx">new Cloud 66 toolbelt</a> instead.</h2>
 <h1 class="doc-title">Cloud 66 Toolbelt</h1>
 <p class="lead">Cloud 66 Toolbelt is a simple command-line tool for the awesome Cloud 66 customers. It allows you to deploy, modify settings and retrieve the current status of your Cloud 66 stacks, and much more!</p>
 
